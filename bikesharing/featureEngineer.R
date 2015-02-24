@@ -6,7 +6,9 @@ featureEngineer <- function(data) {
   
   # datetime - hourly date + timestamp  
   data$datetime <- as.POSIXct(data$datetime)
-  data$hour <- hour(data$datetime)
+  data$yr <- factor(year(data$datetime))
+  data$mo <- factor(month(data$datetime))
+  data$hr <- factor(hour(data$datetime))
   data$weekday <- factor(weekdays(data$datetime))
   
   # season -  1 = spring, 2 = summer, 3 = fall, 4 = winter 
@@ -37,20 +39,23 @@ featureEngineer <- function(data) {
 
 
 train <- read.csv('Documents/Kaggle/bikesharing/data/train.csv')
+test <- read.csv('Documents/Kaggle/bikesharing/data/test.csv')
 
 train2 <- featureEngineer(train)
 
-test <- read.csv('Documents/Kaggle/bikesharing/data/test.csv')
+set.seed(4000)
+fit_casual <- randomForest(casual~season+holiday+workingday+weather+temp+atemp+humidity+windspeed+yr+mo+hr+weekday, train2, ntree=500, mtry=5, importance=T)
+fit_reg <- randomForest(registered~season+holiday+workingday+weather+temp+atemp+humidity+windspeed+yr+mo+hr+weekday, train2, ntree=500, mtry=5, importance=T)
 
-
-
-
-train3 <- train2[, c(2:9, 12:14)]
-fit <- lm(count~.-count, train3)
 
 test2 <- featureEngineer(test)
 test3 <- test2[, 2:ncol(test2)]
 
-y_ <- predict(fit, newdata = test3)
+
+test$casual <- predict(fit_casual, newdata = test3)
+test$registered <- predict(fit_reg, newdata = test3)
+
+test$count <- round(test$casual + test$registered)
 
 
+write.csv(test[, c("datetime", "count")], 'Documents/Kaggle/bikesharing/20150224_submission1.csv', row.names = F)
