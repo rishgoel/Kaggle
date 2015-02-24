@@ -1,14 +1,13 @@
 options(stringsAsFactors = F)
 library(lubridate)
+library(randomForest)
 
 featureEngineer <- function(data) {
   
   # datetime - hourly date + timestamp  
   data$datetime <- as.POSIXct(data$datetime)
   data$hour <- hour(data$datetime)
-  
-  
-  
+  data$weekday <- factor(weekdays(data$datetime))
   
   # season -  1 = spring, 2 = summer, 3 = fall, 4 = winter 
   data$season <- factor(data$season)
@@ -29,11 +28,29 @@ featureEngineer <- function(data) {
   # registered - number of registered user rentals initiated
   # count - number of total rentals
   
-  
-  
+
+  return(data)
   
 }
 
 
 
-data <- read.csv('Documents/Kaggle/bikesharing/data/train.csv')
+
+train <- read.csv('Documents/Kaggle/bikesharing/data/train.csv')
+
+train2 <- featureEngineer(train)
+
+test <- read.csv('Documents/Kaggle/bikesharing/data/test.csv')
+
+
+
+
+train3 <- train2[, c(2:9, 12:14)]
+fit <- lm(count~.-count, train3)
+
+test2 <- featureEngineer(test)
+test3 <- test2[, 2:ncol(test2)]
+
+y_ <- predict(fit, newdata = test3)
+
+
