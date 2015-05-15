@@ -3,11 +3,11 @@ library(lubridate)
 library(randomForest)
 
 featureEngineer <- function(data) {
-  
   # datetime - hourly date + timestamp  
   data$datetime <- as.POSIXct(data$datetime)
   data$yr <- factor(year(data$datetime))
   data$mo <- factor(month(data$datetime))
+  #data$day <- factor(day(data$datetime))
   data$hr <- factor(hour(data$datetime))
   data$weekday <- factor(weekdays(data$datetime))
   
@@ -15,7 +15,9 @@ featureEngineer <- function(data) {
   data$season <- factor(data$season)
   
   # holiday - whether the day is considered a holiday
+  data$holiday <- factor(data$holiday)
   # workingday - whether the day is neither a weekend nor holiday
+  data$workingday <- factor(data$workingday)
   # weather - 1: Clear, Few clouds, Partly cloudy, Partly cloudy 
   #           2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist 
   #           3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds 
